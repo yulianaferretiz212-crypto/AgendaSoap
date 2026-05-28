@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="Agenda"
+  targetNamespace="http://ejemplo.com/agenda"
+  xmlns:tns="http://ejemplo.com/agenda"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+  <types>
+    <xsd:schema targetNamespace="http://ejemplo.com/agenda">
+      <xsd:element name="AgregarContactoRequest">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="nombre" type="xsd:string"/>
+          <xsd:element name="apellidos" type="xsd:string"/>
+          <xsd:element name="telefono" type="xsd:string"/>
+          <xsd:element name="correo" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="AgregarContactoResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="resultado" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ObtenerContactosRequest">
+        <xsd:complexType><xsd:sequence/></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ObtenerContactosResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="contactos" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="BuscarContactoRequest">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="telefono" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="BuscarContactoResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="nombre" type="xsd:string"/>
+          <xsd:element name="apellidos" type="xsd:string"/>
+          <xsd:element name="telefono" type="xsd:string"/>
+          <xsd:element name="correo" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </types>
+
+  <message name="AgregarContactoRequest">
+    <part name="parameters" element="tns:AgregarContactoRequest"/>
+  </message>
+  <message name="AgregarContactoResponse">
+    <part name="parameters" element="tns:AgregarContactoResponse"/>
+  </message>
+  <message name="ObtenerContactosRequest">
+    <part name="parameters" element="tns:ObtenerContactosRequest"/>
+  </message>
+  <message name="ObtenerContactosResponse">
+    <part name="parameters" element="tns:ObtenerContactosResponse"/>
+  </message>
+  <message name="BuscarContactoRequest">
+    <part name="parameters" element="tns:BuscarContactoRequest"/>
+  </message>
+  <message name="BuscarContactoResponse">
+    <part name="parameters" element="tns:BuscarContactoResponse"/>
+  </message>
+
+  <portType name="AgendaPortType">
+    <operation name="AgregarContacto">
+      <input message="tns:AgregarContactoRequest"/>
+      <output message="tns:AgregarContactoResponse"/>
+    </operation>
+    <operation name="ObtenerContactos">
+      <input message="tns:ObtenerContactosRequest"/>
+      <output message="tns:ObtenerContactosResponse"/>
+    </operation>
+    <operation name="BuscarContacto">
+      <input message="tns:BuscarContactoRequest"/>
+      <output message="tns:BuscarContactoResponse"/>
+    </operation>
+  </portType>
+
+  <binding name="AgendaBinding" type="tns:AgendaPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="AgregarContacto">
+      <soap:operation soapAction="AgregarContacto"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="ObtenerContactos">
+      <soap:operation soapAction="ObtenerContactos"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="BuscarContacto">
+      <soap:operation soapAction="BuscarContacto"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+  </binding>
+
+  <service name="Agenda">
+    <port name="AgendaPort" binding="tns:AgendaBinding">
+      <soap:address location="http://localhost:3000/agenda"/>
+    </port>
+  </service>
+</definitions>

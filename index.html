@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda de Contactos - SOAP</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f5f5f5; }
+    h1 { color: #222; border-bottom: 2px solid #333; padding-bottom: 10px; }
+    h2 { color: #444; margin-top: 40px; }
+    .seccion { background: white; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 30px; }
+    label { display: block; margin-top: 12px; font-weight: bold; color: #333; }
+    input { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+    button { margin-top: 16px; padding: 10px 24px; background: #222; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #444; }
+    .resultado { margin-top: 16px; padding: 12px; background: #f0f0f0; border-radius: 4px; font-size: 14px; white-space: pre-wrap; }
+    .error { background: #fdecea; color: #b00020; }
+    .exito { background: #e8f5e9; color: #1b5e20; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 8px 12px; text-align: left; border: 1px solid #ddd; font-size: 13px; }
+    th { background: #222; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
+  </style>
+</head>
+<body>
+  <h1>Agenda de Contactos</h1>
+  <p>Cliente web que consume el servicio SOAP de la agenda.</p>
+
+  <div class="seccion">
+    <h2>Agregar contacto</h2>
+    <label for="nombre">Nombre</label>
+    <input type="text" id="nombre" placeholder="Ej. Carlos">
+    <label for="apellidos">Apellidos</label>
+    <input type="text" id="apellidos" placeholder="Ej. Lopez Ramirez">
+    <label for="telefono">Teléfono</label>
+    <input type="text" id="telefono" placeholder="Ej. 4441234567">
+    <label for="correo">Correo electrónico</label>
+    <input type="email" id="correo" placeholder="Ej. carlos@correo.com">
+    <button onclick="agregarContacto()">Guardar contacto</button>
+    <div id="res-agregar" class="resultado" style="display:none"></div>
+  </div>
+
+  <div class="seccion">
+    <h2>Lista de contactos</h2>
+    <button onclick="obtenerContactos()">Actualizar lista</button>
+    <div id="res-lista"></div>
+  </div>
+
+  <div class="seccion">
+    <h2>Buscar contacto por teléfono</h2>
+    <label for="buscar-tel">Teléfono a buscar</label>
+    <input type="text" id="buscar-tel" placeholder="Ej. 4441234567">
+    <button onclick="buscarContacto()">Buscar</button>
+    <div id="res-buscar" class="resultado" style="display:none"></div>
+  </div>
+
+  <script>
+    const URL_SOAP = "http://localhost:3000/agenda";
+
+    async function enviarSOAP(xmlPeticion) {
+      const respuestaHttp = await fetch(URL_SOAP, {
+        method: "POST",
+        headers: { "Content-Type": "text/xml; charset=utf-8" },
+        body: xmlPeticion
+      });
+      const textoXml = await respuestaHttp.text();
+      const parser = new DOMParser();
+      return parser.parseFromString(textoXml, "text/xml");
+    }
+
+    function getTag(xmlDoc, nombre) {
+      const elem = xmlDoc.getElementsByTagName(nombre)[0];
+      return elem ? elem.textContent : "";
+    }
+
+    function verificarFault(xmlDoc) {
+      const fault = xmlDoc.getElementsByTagName("faultstring")[0];
+      if (fault) throw new Error(fault.textContent);
+    }
+
+    async function agregarContacto() {
+      const nombre    = document.getElementById("nombre").value.trim();
+      const apellidos = document.getElementById("apellidos").value.trim();
+      const telefono  = document.getElementById("telefono").value.trim();
+      const correo    = document.getElementById("correo").value.trim();
+
+      if (!nombre || !apellidos || !telefono || !correo) {
+        mostrar("res-agregar", "Todos los campos son obligatorios.", "error");
+        return;
+      }
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <AgregarContacto>
+      <nombre>${nombre}</nombre>
+      <apellidos>${apellidos}</apellidos>
+      <telefono>${telefono}</telefono>
+      <correo>${correo}</correo>
+    </AgregarContacto>
+  </soap:Body>
+</soap:Envelope>`;
+
+      try {
+        const xmlDoc = await enviarSOAP(xml);
+        verificarFault(xmlDoc);
+        mostrar("res-agregar", getTag(xmlDoc, "resultado"), "exito");
+        ["nombre","apellidos","telefono","correo"].forEach(id => {
+          document.getElementById(id).value = "";
+        });
+        obtenerContactos();
+      } catch (err) {
+        mostrar("res-agregar", "Error: " + err.message, "error");
+      }
+    }
+
+    async function obtenerContactos() {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <ObtenerContactos/>
+  </soap:Body>
+</soap:Envelope>`;
+
+      try {
+        const xmlDoc = await enviarSOAP(xml);
+        verificarFault(xmlDoc);
+        const lista = JSON.parse(getTag(xmlDoc, "contactos") || "[]");
+        const contenedor = document.getElementById("res-lista");
+        if (lista.length === 0) {
+          contenedor.innerHTML = "<p>No hay contactos registrados.</p>";
+          return;
+        }
+        let html = `<table><thead><tr>
+          <th>Nombre</th><th>Apellidos</th><th>Teléfono</th><th>Correo</th>
+        </tr></thead><tbody>`;
+        lista.forEach(c => {
+          html += `<tr>
+            <td>${c.nombre}</td>
+            <td>${c.apellidos}</td>
+            <td>${c.telefono}</td>
+            <td>${c.correo}</td>
+          </tr>`;
+        });
+        html += "</tbody></table>";
+        contenedor.innerHTML = html;
+      } catch (err) {
+        document.getElementById("res-lista").innerHTML =
+          `<p style="color:red">Error: ${err.message}</p>`;
+      }
+    }
+
+    async function buscarContacto() {
+      const telefono = document.getElementById("buscar-tel").value.trim();
+      if (!telefono) {
+        mostrar("res-buscar", "Ingresar un numero de telefono para buscar.", "error");
+        return;
+      }
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <BuscarContacto>
+      <telefono>${telefono}</telefono>
+    </BuscarContacto>
+  </soap:Body>
+</soap:Envelope>`;
+
+      try {
+        const xmlDoc = await enviarSOAP(xml);
+        verificarFault(xmlDoc);
+        const info =
+          `Nombre: ${getTag(xmlDoc,"nombre")} ${getTag(xmlDoc,"apellidos")}\n` +
+          `Teléfono: ${getTag(xmlDoc,"telefono")}\n` +
+          `Correo: ${getTag(xmlDoc,"correo")}`;
+        mostrar("res-buscar", info, "exito");
+      } catch (err) {
+        mostrar("res-buscar", "Error: " + err.message, "error");
+      }
+    }
+
+    function mostrar(idDiv, texto, tipo) {
+      const div = document.getElementById(idDiv);
+      div.textContent = texto;
+      div.className = "resultado " + tipo;
+      div.style.display = "block";
+    }
+
+    obtenerContactos();
+  </script>
+</body>
+</html>
