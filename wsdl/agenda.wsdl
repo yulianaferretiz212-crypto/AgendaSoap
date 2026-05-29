@@ -8,57 +8,64 @@
 
   <types>
     <xsd:schema targetNamespace="http://ejemplo.com/agenda">
-      <xsd:element name="AgregarContactoRequest">
+
+      <xsd:element name="AgregarContacto">
         <xsd:complexType><xsd:sequence>
-          <xsd:element name="nombre" type="xsd:string"/>
+          <xsd:element name="nombre"    type="xsd:string"/>
           <xsd:element name="apellidos" type="xsd:string"/>
-          <xsd:element name="telefono" type="xsd:string"/>
-          <xsd:element name="correo" type="xsd:string"/>
+          <xsd:element name="telefono"  type="xsd:string"/>
+          <xsd:element name="correo"    type="xsd:string"/>
         </xsd:sequence></xsd:complexType>
       </xsd:element>
+
       <xsd:element name="AgregarContactoResponse">
         <xsd:complexType><xsd:sequence>
           <xsd:element name="resultado" type="xsd:string"/>
         </xsd:sequence></xsd:complexType>
       </xsd:element>
-      <xsd:element name="ObtenerContactosRequest">
+
+      <xsd:element name="ObtenerContactos">
         <xsd:complexType><xsd:sequence/></xsd:complexType>
       </xsd:element>
+
       <xsd:element name="ObtenerContactosResponse">
         <xsd:complexType><xsd:sequence>
           <xsd:element name="contactos" type="xsd:string"/>
         </xsd:sequence></xsd:complexType>
       </xsd:element>
-      <xsd:element name="BuscarContactoRequest">
+
+      <xsd:element name="BuscarContacto">
         <xsd:complexType><xsd:sequence>
           <xsd:element name="telefono" type="xsd:string"/>
         </xsd:sequence></xsd:complexType>
       </xsd:element>
+
       <xsd:element name="BuscarContactoResponse">
         <xsd:complexType><xsd:sequence>
-          <xsd:element name="nombre" type="xsd:string"/>
+          <xsd:element name="nombre"    type="xsd:string"/>
           <xsd:element name="apellidos" type="xsd:string"/>
-          <xsd:element name="telefono" type="xsd:string"/>
-          <xsd:element name="correo" type="xsd:string"/>
+          <xsd:element name="telefono"  type="xsd:string"/>
+          <xsd:element name="correo"    type="xsd:string"/>
         </xsd:sequence></xsd:complexType>
       </xsd:element>
+
     </xsd:schema>
   </types>
 
   <message name="AgregarContactoRequest">
-    <part name="parameters" element="tns:AgregarContactoRequest"/>
+    <part name="parameters" element="tns:AgregarContacto"/>
   </message>
   <message name="AgregarContactoResponse">
     <part name="parameters" element="tns:AgregarContactoResponse"/>
   </message>
   <message name="ObtenerContactosRequest">
-    <part name="parameters" element="tns:ObtenerContactosRequest"/>
+    <part name="parameters" element="tns:ObtenerContactos"/>
   </message>
   <message name="ObtenerContactosResponse">
     <part name="parameters" element="tns:ObtenerContactosResponse"/>
   </message>
   <message name="BuscarContactoRequest">
-    <part name="parameters" element="tns:BuscarContactoRequest"/>
+    <part name="parameters" element="tns:BuscarContacto"/>
   </message>
   <message name="BuscarContactoResponse">
     <part name="parameters" element="tns:BuscarContactoResponse"/>
@@ -66,15 +73,15 @@
 
   <portType name="AgendaPortType">
     <operation name="AgregarContacto">
-      <input message="tns:AgregarContactoRequest"/>
+      <input  message="tns:AgregarContactoRequest"/>
       <output message="tns:AgregarContactoResponse"/>
     </operation>
     <operation name="ObtenerContactos">
-      <input message="tns:ObtenerContactosRequest"/>
+      <input  message="tns:ObtenerContactosRequest"/>
       <output message="tns:ObtenerContactosResponse"/>
     </operation>
     <operation name="BuscarContacto">
-      <input message="tns:BuscarContactoRequest"/>
+      <input  message="tns:BuscarContactoRequest"/>
       <output message="tns:BuscarContactoResponse"/>
     </operation>
   </portType>
@@ -103,4 +110,5 @@
       <soap:address location="http://localhost:3000/agenda"/>
     </port>
   </service>
+
 </definitions>
